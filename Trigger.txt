@@ -1,0 +1,30 @@
+alter trigger tr_trtest on [dbo].Test
+after insert, update, delete
+AS
+Begin
+
+	declare @Id tinyint;
+	declare @name nvarchar(100);
+	declare @address nvarchar(100);
+	declare @insertcount tinyint;
+	declare @deletecount tinyint;
+
+	select @Id = Test.Id from inserted Test;
+	select @name = Test.Name from inserted Test;
+	select @address = Test.Address from inserted Test;
+
+	select @insertcount = COUNT(Id) from inserted;
+
+	select @Id = Test.Id from deleted Test;
+	select @name = Test.Name from deleted Test;
+	select @address = Test.Address from deleted Test;
+
+	select @deletecount = COUNT(Id) from deleted;
+
+	if(@insertcount&@deletecount > 0)
+		insert into Test1 (Details) Values('Updated : ' + Cast(@Id as nvarchar) + ' ' + @name + ' ' + @address + ' ' + Cast(GETDATE() as nvarchar))
+	else if(@insertcount > 0)
+		insert into Test1 (Details) Values('Inserted : ' + Cast(@Id as nvarchar) + ' ' + @name + ' ' + @address + ' ' + Cast(GETDATE() as nvarchar))
+	else if(@deletecount > 0)
+		insert into Test1 (Details) Values('Deleted : ' + Cast(@Id as nvarchar) + ' ' + @name + ' ' + @address + ' ' + Cast(GETDATE() as nvarchar))
+End

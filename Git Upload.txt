@@ -1,0 +1,15 @@
+First Time only
+
+git init
+git status (optional)
+git add .
+git commit -m "Upload Project"
+git remote add origin Repository URL
+git push origin master / master -f
+
+------------------------------------------------
+Project commit
+
+git add . 
+git commit -m "Description"
+git push origin master
