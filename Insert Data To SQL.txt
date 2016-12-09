@@ -1,0 +1,13 @@
+string connectionString = "Data source=.; Database=TestDb; Integrated Security=True"
+
+using (SqlConnection connection = new SqlConnection(connectionString))
+{
+    SqlCommand cmd = new SqlCommand("INSERT INTO Data (Name, PhoneNo, Address) VALUES (@Name, @PhoneNo, @Address)");
+    cmd.CommandType = CommandType.Text;
+    cmd.Connection = connection;
+    cmd.Parameters.AddWithValue("@Name", txtName.Text);
+    cmd.Parameters.AddWithValue("@PhoneNo", txtPhone.Text);
+    cmd.Parameters.AddWithValue("@Address", txtAddress.Text);
+    connection.Open();
+    cmd.ExecuteNonQuery();
+}
