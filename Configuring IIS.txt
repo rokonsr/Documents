@@ -1,0 +1,9 @@
+First Option-
+=> Application Pools
+=> DefaultAppPool
+=> Identity change to LocalSystem
+
+Second Option-
+=> Select project
+=> Open Authentication
+=> Windows Authentication change to Enable
