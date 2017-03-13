@@ -4,7 +4,7 @@ git init
 git status (optional)
 git add .
 git commit -m "Upload Project"
-git remote add origin Repository URL
+git remote add origin RepositoryURL
 git push origin master / master -f
 
 ------------------------------------------------
