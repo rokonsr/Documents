@@ -1,0 +1,25 @@
+if(@CustomerId > 1)
+			Begin
+
+			Declare @TotalBalance numeric(10,2)
+			Select top 1 @TotalBalance = TotalBalance from [rdb].SaleLedger ORDER BY SaleLedgerId DESC
+			Declare @TotalAmountWithVAT numeric(10,2) = @TotalAmount + @VatAmountTotal
+
+			Declare @DueAmount numeric(10,2) = @TotalAmountWithVAT - @PaidAmount
+			Declare @TransactionType tinyint
+			if(@TotalAmountWithVAT = @PaidAmount)
+			Begin
+				select @TransactionType = 1
+			End
+			else if (@PaidAmount = 0)
+			begin
+				select @TransactionType = 2
+			end
+			else if (@DueAmount != 0)
+			begin
+				select @TransactionType = 3
+			end
+
+				INSERT INTO [rdb].SaleLedger (CustomerId, InvoiceNumber,TransactionType,CurrentDue,TotalBalance,IsActive,CreatedBy,CreatedDate)
+				VALUES (@CustomerId,@highestInvoiceNumber+1,1,@DueAmount,@TotalBalance + @DueAmount, 1, @UserId, GETDATE())
+			End
