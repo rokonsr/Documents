@@ -1,0 +1,187 @@
+protected void gdvCardATMAuthorizationList_PageIndexChanging(object sender, GridViewPageEventArgs e)
+{
+    try
+    {
+        gdvCardATMAuthorizationList.PageIndex = e.NewPageIndex;
+        CardATMCashAuthorizationGV();
+    }
+    catch (Exception ex)
+    {
+        ex.Message.ToString();
+        lblMessage.Text = "Something Went Wrong";
+    }
+}
+protected void gdvCardATMAuthorizationList_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
+{
+    try
+    {
+        gdvCardATMAuthorizationList.EditIndex = -1;
+        CardATMCashAuthorizationGV();
+    }
+    catch (Exception ex)
+    {
+        ex.Message.ToString();
+    }
+}
+protected void gdvCardATMAuthorizationList_RowUpdating(object sender, GridViewUpdateEventArgs e)
+{
+    string strSql;
+
+    try
+    {
+        string strAtmBulkRegId = gdvCardATMAuthorizationList.DataKeys[e.RowIndex].Value.ToString();
+        TextBox lblAccountNumber = gdvCardATMAuthorizationList.Rows[e.RowIndex].FindControl("txtAccountNumber") as TextBox;
+        string strAccountNumber = lblAccountNumber.Text.Trim() != null ? lblAccountNumber.Text.Trim() : "0";
+        TextBox lblAccountHolderName = gdvCardATMAuthorizationList.Rows[e.RowIndex].FindControl("txtAccountHolderNamer") as TextBox;
+        string strAccountHolderName = lblAccountHolderName.Text.Trim() != null ? lblAccountHolderName.Text.Trim() : "0";
+        DropDownList lblAccountType = gdvCardATMAuthorizationList.Rows[e.RowIndex].FindControl("ddlAccountTypeE") as DropDownList;
+        string strAccountTypeId = lblAccountType.SelectedItem.Value;
+        DropDownList lblAccountSubType = gdvCardATMAuthorizationList.Rows[e.RowIndex].FindControl("ddlAccountSubTypeE") as DropDownList;
+        string strAccountSubTypeId = lblAccountSubType.SelectedItem.Value;
+        DropDownList lblBranchName = gdvCardATMAuthorizationList.Rows[e.RowIndex].FindControl("ddlBranchNameE") as DropDownList;
+        string strBranchId = lblBranchName.SelectedItem.Value;
+        TextBox lblMobileNumber = gdvCardATMAuthorizationList.Rows[e.RowIndex].FindControl("txtMobileNumber") as TextBox;
+        string strMobileNumber = lblMobileNumber.Text.Trim() != null ? lblMobileNumber.Text.Trim() : "0";
+        TextBox lblAccountHolderEmail = gdvCardATMAuthorizationList.Rows[e.RowIndex].FindControl("txtAccountHolderEmail") as TextBox;
+        string strAccountHolderEmail = lblAccountHolderEmail.Text.Trim() != null ? lblAccountHolderEmail.Text.Trim() : "0";
+
+        lblMessage.Text = "";
+
+        strSql = objAccountHandler.UpdateCardATMAuthorizationList(strAtmBulkRegId, strAccountNumber, strAccountHolderName, strAccountTypeId, strAccountSubTypeId, strBranchId, strMobileNumber, strAccountHolderEmail);
+
+        if (strSql.Equals("Successful"))
+        {
+            lblMessage.Text = "Card ATM Authorization List Update Successfully";
+            gdvCardATMAuthorizationList.EditIndex = -1;
+            CardATMCashAuthorizationGV();
+        }
+        else
+        {
+            lblMessage.Text = "Card ATM Authorization List Update Failled";
+        }
+    }
+    catch (Exception ex)
+    {
+        ex.Message.ToString();
+        lblMessage.Text = "Something went wrong";
+    }
+}
+protected void gdvCardATMAuthorizationList_RowEditing(object sender, GridViewEditEventArgs e)
+{
+    try
+    {
+        gdvCardATMAuthorizationList.EditIndex = e.NewEditIndex;
+        CardATMCashAuthorizationGV();
+    }
+    catch (Exception ex)
+    {
+        ex.Message.ToString();
+    }
+}
+protected void btnApproved_Click(object sender, EventArgs e)
+{
+    try
+    {
+        Button btnApprove = (Button)sender;
+        GridViewRow Grow = (GridViewRow)btnApprove.NamingContainer;
+        Label lblAccountNumber = (Label)Grow.FindControl("lblAccountNumber");
+        string strAccountNumber = lblAccountNumber.Text.ToString();
+
+        string strResult = objServiceHandler.AccountAuthorization(strAccountNumber);
+
+        if (strResult.Equals("Success"))
+        {
+            lblMessage.Text = "Account : " + strAccountNumber + " has been created successfully";
+            CardATMCashAuthorizationGV();
+        }
+        else
+        {
+            lblMessage.Text = "Account : " + strAccountNumber + " creation failed. Please try again.";
+        }
+    }
+    catch (Exception ex)
+    {
+        ex.Message.ToString();
+    }
+}
+protected void gdvCardATMAuthorizationList_RowDataBound(object sender, GridViewRowEventArgs e)
+{
+    try
+    {
+        if (e.Row.RowType == DataControlRowType.DataRow && gdvCardATMAuthorizationList.EditIndex != e.Row.RowIndex)
+        {
+            DropDownList ddlAccountType = (e.Row.FindControl("ddlAccountTypeI") as DropDownList);
+            string strSql = "SELECT ATM_ACCOUNT_TYPE_ID,ACCNT_TYPE_NAME FROM ATM_ACCOUNT_TYPE WHERE ACCNT_TYPE_PARENT_ID IS NULL AND ACCNT_STATUS = 'A'";
+            DataSet oDs = objServiceHandler.ExecuteQuery(strSql);
+            ddlAccountType.DataSource = oDs;
+            ddlAccountType.DataValueField = "ATM_ACCOUNT_TYPE_ID";
+            ddlAccountType.DataTextField = "ACCNT_TYPE_NAME";
+            ddlAccountType.DataBind();
+
+            string strAccountTypeId = (string)gdvCardATMAuthorizationList.DataKeys[e.Row.RowIndex][1].ToString();
+            ddlAccountType.Items.FindByValue(strAccountTypeId).Selected = true;
+
+            DropDownList ddlBranchName = (e.Row.FindControl("ddlBranchNameI") as DropDownList);
+            string strSql1 = "SELECT CMP_BRANCH_ID, CMP_BRANCH_NAME FROM CM_CMP_BRANCH WHERE CMP_BRANCH_STATUS = 'A'";
+            DataSet oDs1 = objServiceHandler.ExecuteQuery(strSql1);
+            ddlBranchName.DataSource = oDs1;
+            ddlBranchName.DataValueField = "CMP_BRANCH_ID";
+            ddlBranchName.DataTextField = "CMP_BRANCH_NAME";
+            ddlBranchName.DataBind();
+
+            string strBranchId = (string)gdvCardATMAuthorizationList.DataKeys[e.Row.RowIndex][3].ToString();
+            ddlBranchName.Items.FindByValue(strBranchId).Selected = true;
+
+            DropDownList ddlAccounSubtType = (e.Row.FindControl("ddlAccounSubtTypeI") as DropDownList);
+            string strSql2 = "SELECT ATM_ACCOUNT_TYPE_ID,ACCNT_TYPE_NAME FROM ATM_ACCOUNT_TYPE WHERE ACCNT_STATUS = 'A' AND ACCNT_TYPE_PARENT_ID IS NOT NULL";
+            DataSet oDs2 = objServiceHandler.ExecuteQuery(strSql2);
+            ddlAccounSubtType.DataSource = oDs2;
+            ddlAccounSubtType.DataValueField = "ATM_ACCOUNT_TYPE_ID";
+            ddlAccounSubtType.DataTextField = "ACCNT_TYPE_NAME";
+            ddlAccounSubtType.DataBind();
+
+            string strAccountSubTypeId = (string)gdvCardATMAuthorizationList.DataKeys[e.Row.RowIndex][2].ToString();
+            ddlAccounSubtType.Items.FindByValue(strAccountSubTypeId).Selected = true;
+        }
+
+        if (gdvCardATMAuthorizationList.EditIndex == e.Row.RowIndex && e.Row.RowType == DataControlRowType.DataRow)
+        {
+            DropDownList ddlAccountType = (e.Row.FindControl("ddlAccountTypeE") as DropDownList);
+            string strSql = "SELECT ATM_ACCOUNT_TYPE_ID,ACCNT_TYPE_NAME FROM ATM_ACCOUNT_TYPE WHERE ACCNT_TYPE_PARENT_ID IS NULL AND ACCNT_STATUS = 'A'";
+            DataSet oDs = objServiceHandler.ExecuteQuery(strSql);
+            ddlAccountType.DataSource = oDs;
+            ddlAccountType.DataValueField = "ATM_ACCOUNT_TYPE_ID";
+            ddlAccountType.DataTextField = "ACCNT_TYPE_NAME";
+            ddlAccountType.DataBind();
+
+            string strAccountTypeId = (string)gdvCardATMAuthorizationList.DataKeys[e.Row.RowIndex][1].ToString();
+            ddlAccountType.Items.FindByValue(strAccountTypeId).Selected = true;
+
+            DropDownList ddlBranchName = (e.Row.FindControl("ddlBranchNameE") as DropDownList);
+            string strSql1 = "SELECT CMP_BRANCH_ID, CMP_BRANCH_NAME FROM CM_CMP_BRANCH WHERE CMP_BRANCH_STATUS = 'A'";
+            DataSet oDs1 = objServiceHandler.ExecuteQuery(strSql1);
+            ddlBranchName.DataSource = oDs1;
+            ddlBranchName.DataValueField = "CMP_BRANCH_ID";
+            ddlBranchName.DataTextField = "CMP_BRANCH_NAME";
+            ddlBranchName.DataBind();
+
+            string strBranchId = (string)gdvCardATMAuthorizationList.DataKeys[e.Row.RowIndex][3].ToString();
+            ddlBranchName.Items.FindByValue(strBranchId).Selected = true;
+
+            DropDownList ddlAccounSubtType = (e.Row.FindControl("ddlAccountSubTypeE") as DropDownList);
+            string strSql2 = "SELECT ATM_ACCOUNT_TYPE_ID,ACCNT_TYPE_NAME FROM ATM_ACCOUNT_TYPE WHERE ACCNT_STATUS = 'A' AND ACCNT_TYPE_PARENT_ID IS NOT NULL";
+            DataSet oDs2 = objServiceHandler.ExecuteQuery(strSql2);
+            ddlAccounSubtType.DataSource = oDs2;
+            ddlAccounSubtType.DataValueField = "ATM_ACCOUNT_TYPE_ID";
+            ddlAccounSubtType.DataTextField = "ACCNT_TYPE_NAME";
+            ddlAccounSubtType.DataBind();
+
+            string strAccountSubTypeId = (string)gdvCardATMAuthorizationList.DataKeys[e.Row.RowIndex][2].ToString();
+            ddlAccounSubtType.Items.FindByValue(strAccountSubTypeId).Selected = true;
+        }
+    }
+    catch (Exception ex)
+    {
+        ex.Message.ToString();
+    }
+}
